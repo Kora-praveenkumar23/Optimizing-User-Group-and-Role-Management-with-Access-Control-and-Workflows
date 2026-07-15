@@ -1,0 +1,54 @@
+{
+  "flow_name": "Task Table Automation Flow",
+  "application": "Global",
+  "active": true,
+  "description": "Triggered when a task assigned to Bob is set to In Progress with Feedback comments. Automatically completes the task and requests approval from Alice.",
+  "trigger": {
+    "type": "Record Created or Updated",
+    "table": "u_task_table2",
+    "condition": [
+      {
+        "field": "u_status",
+        "operator": "==",
+        "value": "In Progress"
+      },
+      {
+        "field": "u_comments",
+        "operator": "contains",
+        "value": "Feedback"
+      },
+      {
+        "field": "u_assigned_to.user_name",
+        "operator": "==",
+        "value": "bob"
+      }
+    ],
+    "run_on": "Every update matching conditions"
+  },
+  "actions": [
+    {
+      "step": 1,
+      "type": "Update Record",
+      "target": "Triggering Record",
+      "fields_to_update": {
+        "u_status": "Completed"
+      },
+      "description": "Set task status to Completed automatically."
+    },
+    {
+      "step": 2,
+      "type": "Ask For Approval",
+      "target": "Triggering Record",
+      "approver": {
+        "user_name": "alice",
+        "display_name": "Alice (Project Manager)",
+        "sys_id": "DYNAMIC_REF_ALICE"
+      },
+      "rules": "Approve when Anyone Approves",
+      "journal_fields": {
+        "approval_history": "System triggered approval request sent to Project Manager Alice."
+      },
+      "description": "Request completion approval from Project Manager Alice."
+    }
+  ]
+}

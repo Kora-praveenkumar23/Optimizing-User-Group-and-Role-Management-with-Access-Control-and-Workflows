@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceNow Next Experience - Custom RBAC & Automation Simulator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP HEADER BAR -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <span>service<b>now</b>.</span>
+                </div>
+                <div class="instance-badge">Developer Instance: dev12345</div>
+            </div>
+            
+            <div class="header-center">
+                <div class="global-search">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" placeholder="Search files, tables, records..." disabled>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="impersonator-control">
+                    <label for="impersonate-select">Impersonate User:</label>
+                    <div class="select-wrapper">
+                        <select id="impersonate-select" onchange="switchUser(this.value)">
+                            <option value="admin">System Administrator (Admin)</option>
+                            <option value="alice">Alice (Project Manager)</option>
+                            <option value="bob">Bob (Team Member)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="user-avatar" id="current-user-avatar">SA</div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="main-layout">
+            <!-- SIDEBAR: APPLICATION NAVIGATOR -->
+            <aside class="app-sidebar">
+                <div class="sidebar-filter">
+                    <input type="text" id="filter-navigator" placeholder="Filter navigator..." onkeyup="filterNav()">
+                </div>
+                
+                <nav class="navigator-menu">
+                    <!-- Section: System Security -->
+                    <div class="nav-section" id="section-system-security">
+                        <div class="section-title">
+                            <span>System Security</span>
+                        </div>
+                        <ul class="nav-links">
+                            <li class="nav-item active" onclick="showView('users')" data-nav="users">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                <span>Users</span>
+                            </li>
+                            <li class="nav-item" onclick="showView('groups')" data-nav="groups">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                                <span>Groups</span>
+                            </li>
+                            <li class="nav-item" onclick="showView('roles')" data-nav="roles">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span>Roles</span>
+                            </li>
+                            <li class="nav-item" onclick="showView('acls')" data-nav="acls">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                <span>Access Control (ACL)</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Section: Project Management -->
+                    <div class="nav-section" id="section-project-management">
+                        <div class="section-title">
+                            <span>Project Management</span>
+                        </div>
+                        <ul class="nav-links">
+                            <li class="nav-item" onclick="showView('projects')" id="menu-project-table" data-nav="projects">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                <span>Project Table</span>
+                            </li>
+                            <li class="nav-item" onclick="showView('tasks')" id="menu-task-table" data-nav="tasks">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                                <span>Task Table 2</span>
+                            </li>
+                            <li class="nav-item" onclick="showView('approvals')" id="menu-approvals" data-nav="approvals">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <span>My Approvals <span class="badge badge-error" id="approval-badge" style="display:none;">0</span></span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Section: Workflow Automation -->
+                    <div class="nav-section" id="section-automation">
+                        <div class="section-title">
+                            <span>Process Automation</span>
+                        </div>
+                        <ul class="nav-links">
+                            <li class="nav-item" onclick="showView('flow-designer')" data-nav="flow-designer">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                <span>Flow Designer Console</span>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- CONTENT BODY FRAME -->
+            <main class="content-frame">
+                <!-- Banner for Security Notification -->
+                <div class="security-banner" id="security-alert-banner">
+                    <span id="security-alert-text"></span>
+                    <button class="close-banner" onclick="hideSecurityBanner()">&times;</button>
+                </div>
+
+                <!-- VIEW 1: USERS -->
+                <section id="view-users" class="content-view active">
+                    <div class="view-header">
+                        <h1>Users <span class="subtitle">sys_user</span></h1>
+                        <button class="btn btn-primary" onclick="showCreateUserForm()">New</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Title</th>
+                                    <th>Email</th>
+                                    <th>Active</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: GROUPS -->
+                <section id="view-groups" class="content-view">
+                    <div class="view-header">
+                        <h1>Groups <span class="subtitle">sys_user_group</span></h1>
+                        <button class="btn btn-primary" onclick="showCreateGroupForm()">New</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Members</th>
+                                    <th>Roles</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groups-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: ROLES -->
+                <section id="view-roles" class="content-view">
+                    <div class="view-header">
+                        <h1>Roles <span class="subtitle">sys_user_role</span></h1>
+                        <button class="btn btn-primary" onclick="showCreateRoleForm()">New</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Role Name</th>
+                                    <th>Description</th>
+                                    <th>Inherited By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roles-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: ACLs -->
+                <section id="view-acls" class="content-view">
+                    <div class="view-header">
+                        <h1>Access Control Lists (ACL) <span class="subtitle">sys_security_acl</span></h1>
+                        <div class="badge badge-info">security_admin Mode Active</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Operation</th>
+                                    <th>Name (Table / Field)</th>
+                                    <th>Requires Role</th>
+                                    <th>Active</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="acls-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: PROJECTS -->
+                <section id="view-projects" class="content-view">
+                    <div class="view-header">
+                        <h1>Project Table <span class="subtitle">u_project_table</span></h1>
+                        <button class="btn btn-primary" id="new-project-btn" onclick="showProjectForm()">New</button>
+                    </div>
+                    <div class="table-container" id="project-list-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Owner</th>
+                                    <th>Deadline</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projects-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Project Form Card -->
+                    <div class="record-form-card" id="project-form-card" style="display:none;">
+                        <div class="form-header">
+                            <h2 id="project-form-title">New Record</h2>
+                            <div class="form-actions">
+                                <button class="btn btn-secondary" onclick="hideProjectForm()">Cancel</button>
+                                <button class="btn btn-primary" id="save-project-btn" onclick="saveProject()">Save</button>
+                            </div>
+                        </div>
+                        <form id="project-form" onsubmit="event.preventDefault();">
+                            <input type="hidden" id="project-id">
+                            <div class="form-group">
+                                <label for="project-name">Project Name <span class="required">*</span></label>
+                                <input type="text" id="project-name" required>
+                                <small class="acl-badge" id="project-name-acl">ACL: u_project_table_role</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="project-owner">Owner <span class="required">*</span></label>
+                                <select id="project-owner" required>
+                                    <!-- Dynamic list of users -->
+                                </select>
+                                <small class="acl-badge" id="project-owner-acl">ACL: u_project_table_role</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="project-deadline">Deadline <span class="required">*</span></label>
+                                <input type="date" id="project-deadline" required>
+                                <small class="acl-badge" id="project-deadline-acl">ACL: u_project_table_role</small>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: TASKS -->
+                <section id="view-tasks" class="content-view">
+                    <div class="view-header">
+                        <h1>Task Table 2 <span class="subtitle">u_task_table2</span></h1>
+                        <button class="btn btn-primary" id="new-task-btn" onclick="showTaskForm()">New</button>
+                    </div>
+                    <div class="table-container" id="task-list-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Assigned To</th>
+                                    <th>Status</th>
+                                    <th>Comments</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasks-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Task Form Card -->
+                    <div class="record-form-card" id="task-form-card" style="display:none;">
+                        <div class="form-header">
+                            <h2 id="task-form-title">New Record</h2>
+                            <div class="form-actions">
+                                <button class="btn btn-secondary" onclick="hideTaskForm()">Cancel</button>
+                                <button class="btn btn-primary" id="save-task-btn" onclick="saveTask()">Save</button>
+                            </div>
+                        </div>
+                        <form id="task-form" onsubmit="event.preventDefault();">
+                            <input type="hidden" id="task-id">
+                            <div class="form-group">
+                                <label for="task-name">Task Name <span class="required">*</span></label>
+                                <input type="text" id="task-name" required>
+                                <small class="acl-badge" id="task-name-acl">ACL: u_project_manager_role</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-assigned-to">Assigned To <span class="required">*</span></label>
+                                <select id="task-assigned-to" required>
+                                    <!-- Dynamic list of users -->
+                                </select>
+                                <small class="acl-badge" id="task-assigned-to-acl">ACL: u_project_manager_role</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-status">Status <span class="required">*</span></label>
+                                <select id="task-status" required>
+                                    <option value="New">New</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Pending Approval">Pending Approval</option>
+                                    <option value="Approved">Approved</option>
+                                </select>
+                                <small class="acl-badge acl-write-allowed" id="task-status-acl">ACL: Write allowed for Team Member</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-description">Description</label>
+                                <textarea id="task-description" rows="3"></textarea>
+                                <small class="acl-badge" id="task-description-acl">ACL: u_project_manager_role</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-comments">Comments (Write 'Feedback' and save with 'In Progress' to trigger flow)</label>
+                                <textarea id="task-comments" rows="3" placeholder="Add discussion comments..."></textarea>
+                                <small class="acl-badge acl-write-allowed" id="task-comments-acl">ACL: Write allowed for Team Member</small>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- VIEW 7: APPROVALS -->
+                <section id="view-approvals" class="content-view">
+                    <div class="view-header">
+                        <h1>My Approvals <span class="subtitle">sysapproval_approver</span></h1>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>State</th>
+                                    <th>Approver</th>
+                                    <th>Target Record</th>
+                                    <th>Requested Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approvals-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 8: FLOW DESIGNER -->
+                <section id="view-flow-designer" class="content-view">
+                    <div class="view-header">
+                        <h1>Flow Designer Console <span class="subtitle">Process Automation</span></h1>
+                    </div>
+                    
+                    <div class="flow-designer-grid">
+                        <div class="flow-definition-card">
+                            <h3>Flow Logic Diagram: <code>Task Table Automation Flow</code></h3>
+                            <div class="flow-steps">
+                                <div class="flow-step trigger">
+                                    <div class="step-badge">Trigger</div>
+                                    <div class="step-content">
+                                        <strong>On Task Created or Updated</strong>
+                                        <p>Where <code>Status == 'In Progress'</code> AND <code>Comments contains 'Feedback'</code> AND <code>Assigned To == 'Bob'</code></p>
+                                    </div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-step action">
+                                    <div class="step-badge">Action 1</div>
+                                    <div class="step-content">
+                                        <strong>Update Task Status</strong>
+                                        <p>Set <code>Status = 'Completed'</code></p>
+                                    </div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-step action">
+                                    <div class="step-badge">Action 2</div>
+                                    <div class="step-content">
+                                        <strong>Ask for Approval</strong>
+                                        <p>Send approval request to <code>Alice (Project Manager)</code></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flow-logs-card">
+                            <div class="card-header">
+                                <h3>Execution Logs</h3>
+                                <button class="btn btn-secondary btn-sm" onclick="clearLogs()">Clear Logs</button>
+                            </div>
+                            <div class="console-logs" id="flow-execution-logs">
+                                <div class="log-line system">[System Initialize] Flow engine started. Standing by for u_task_table2 triggers...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- RIGHT COLLAPSIBLE SIDEBAR: GUIDED WALKTHROUGH -->
+            <aside class="walkthrough-panel" id="walkthrough-bar">
+                <div class="walkthrough-header">
+                    <h3>Scenario Walkthrough</h3>
+                    <p>Follow these steps to validate ACLs & Flow Designer.</p>
+                </div>
+                
+                <div class="walkthrough-steps">
+                    <!-- Step 1 -->
+                    <div class="step-card active" id="wt-step-1">
+                        <div class="step-num">1</div>
+                        <div class="step-card-content">
+                            <h4>Initialize as Alice</h4>
+                            <p>Switch user in the top header to <b>Alice (Project Manager)</b>.</p>
+                            <p>Navigate to <b>Project Table</b>, click <b>New</b>, and create a Project. (Alice has full access).</p>
+                            <button class="btn btn-secondary btn-sm wt-btn" onclick="guideStep1()">Start Step 1</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="step-card" id="wt-step-2">
+                        <div class="step-num">2</div>
+                        <div class="step-card-content">
+                            <h4>Create & Assign Task</h4>
+                            <p>Still as Alice, go to <b>Task Table 2</b>, click <b>New</b>.</p>
+                            <p>Create a task, set <b>Assigned To = Bob</b>, Status = <b>New</b>, and click <b>Save</b>.</p>
+                            <button class="btn btn-secondary btn-sm wt-btn" id="btn-guide-step-2" onclick="guideStep2()" disabled>Proceed</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="step-card" id="wt-step-3">
+                        <div class="step-num">3</div>
+                        <div class="step-card-content">
+                            <h4>Impersonate Bob & Test ACLs</h4>
+                            <p>Switch user to <b>Bob (Team Member)</b>.</p>
+                            <p>Verify that <b>Project Table</b> navigator is hidden. Go to <b>Task Table 2</b> and open Bob's task.</p>
+                            <p>Observe that <i>Task Name</i> and <i>Description</i> are locked (Read-only ACLs in action!).</p>
+                            <button class="btn btn-secondary btn-sm wt-btn" id="btn-guide-step-3" onclick="guideStep3()" disabled>Proceed</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="step-card" id="wt-step-4">
+                        <div class="step-num">4</div>
+                        <div class="step-card-content">
+                            <h4>Trigger Flow Automation</h4>
+                            <p>As Bob, set Status = <b>In Progress</b> and write <code>Feedback</code> in the Comments field, then click <b>Save</b>.</p>
+                            <p>This triggers the Flow Designer flow! Task status will auto-complete and send approval to Alice.</p>
+                            <button class="btn btn-secondary btn-sm wt-btn" id="btn-guide-step-4" onclick="guideStep4()" disabled>Proceed</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="step-card" id="wt-step-5">
+                        <div class="step-num">5</div>
+                        <div class="step-card-content">
+                            <h4>Alice Approves Task</h4>
+                            <p>Impersonate <b>Alice</b> again. Navigate to <b>My Approvals</b> (badge shows pending approval).</p>
+                            <p>Click <b>Approve</b>. The task will be fully resolved! Check the Task list and Flow logs.</p>
+                            <button class="btn btn-success btn-sm wt-btn" id="btn-guide-step-5" onclick="guideStep5()" disabled>Complete Workflow</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script src="app.js"></script>
+</body>
+</html>
